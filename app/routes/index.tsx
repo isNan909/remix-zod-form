@@ -37,6 +37,8 @@ export const action: ActionFunction = async ({ request }) => {
   return {} as any;
 };
 
+  // handle logic with form data and return a value  
+
 export default function Index() {
   const actionData = useActionData();
   return (
@@ -96,7 +98,7 @@ export default function Index() {
             <div className="rounded-md shadow-sm -space-y-px">
               <div className="mb-6">
                 <label
-                  htmlFor="omfirm Email"
+                  htmlFor="Confirm Email"
                   className="block text-sm font-medium text-gray-700 pb-2"
                 >
                   Comfirm Email
@@ -106,6 +108,8 @@ export default function Index() {
                   type="email"
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder=""
+                  defaultValue={actionData?.formPayload?.confirmEmail}
+                  key={actionData?.formPayload?.confirmEmail}
                 />
               </div>
               <span className="text-sm text-red-500">
@@ -124,6 +128,8 @@ export default function Index() {
                 <select
                   name="expertise"
                   className="mt-1 block w-full py-2 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  defaultValue={actionData?.formPayload?.expertise}
+                  key={actionData?.formPayload?.expertise}
                 >
                   <option></option>
                   <option>Product Designer</option>
@@ -150,6 +156,8 @@ export default function Index() {
                   type="text"
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder=""
+                  defaultValue={actionData?.formPayload?.url}
+                  key={actionData?.formPayload?.url}
                 />
               </div>
               <span className="text-sm text-red-500">
@@ -168,6 +176,8 @@ export default function Index() {
                 <select
                   name="availability"
                   className="mt-1 block w-full py-2 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  defaultValue={actionData?.formPayload?.availability}
+                  key={actionData?.formPayload?.availability}
                 >
                   <option></option>
                   <option>Full-time</option>
@@ -193,6 +203,8 @@ export default function Index() {
                   name="description"
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder=""
+                  defaultValue={actionData?.formPayload?.description}
+                  key={actionData?.formPayload?.description}
                 />
               </div>
               <span className="text-sm text-red-500">
