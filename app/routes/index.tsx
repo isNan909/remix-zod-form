@@ -1,3 +1,12 @@
+import { ActionFunction } from '@remix-run/node';
+import { Form } from '@remix-run/react';
+
+export const action: ActionFunction = async ({ request }) => {
+  const formData = Object.fromEntries(await request.formData());
+  console.log(formData);
+  return {};
+};
+
 export default function Index() {
   return (
     <div>
@@ -8,8 +17,7 @@ export default function Index() {
               Remix Form Validation with Zod
             </h2>
           </div>
-          <form className="mt-8 space-y-6" action="#" method="POST">
-            <input type="hidden" name="remember" value="true" />
+          <Form method="post" noValidate={true}>
             <div className="rounded-md shadow-sm -space-y-px">
               <div className="mb-6">
                 <label
@@ -58,7 +66,7 @@ export default function Index() {
                 Submit
               </button>
             </div>
-          </form>
+          </Form>
         </div>
       </div>
     </div>
