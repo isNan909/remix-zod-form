@@ -2,18 +2,6 @@ import { ActionFunction } from '@remix-run/node';
 import { Form, useActionData } from '@remix-run/react';
 import { z } from 'zod';
 
-// const getValidationErrors = (err: any) => {
-//   const validationErrors = {} as any;
-//   console.log(err);
-//   err.inner.forEach((error: any) => {
-//     if (error.path) {
-//       validationErrors[error.path] = error.message;
-//     }
-//   });
-
-//   return validationErrors;
-// };
-
 export const action: ActionFunction = async ({ request }) => {
   const formPayload = Object.fromEntries(await request.formData());
 
