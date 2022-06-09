@@ -1,7 +1,8 @@
 import type { Props } from './types';
-import { Form } from '@remix-run/react';
+import { Form, useTransition } from '@remix-run/react';
 
 export default function PostForm({ error, fields }: Props) {
+  const transition = useTransition();
   return (
     <>
       <Form noValidate={true} method="post">
@@ -186,7 +187,9 @@ export default function PostForm({ error, fields }: Props) {
             type="submit"
             className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
-            Submit
+            {transition.state === 'submitting'
+              ? 'Submitting...'
+              : 'Submit Form'}
           </button>
         </div>
       </Form>
