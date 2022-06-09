@@ -1,46 +1,75 @@
-import { ActionFunction } from '@remix-run/node';
+import { ActionFunction, json } from '@remix-run/node';
 import { Form, useActionData } from '@remix-run/react';
-import { z } from 'zod';
+import { ValidatePost } from '~/services/validation';
+
+type ActionData = {
+  error: {
+    formError: string[] | null;
+    fieldErrors: {
+      name?: string[] | null;
+      email?: string[] | null;
+      confirmEmail?: string[] | null;
+      expertise?: string[] | null;
+      url?: string[] | null;
+      description?: string[] | null;
+      availability?: string[] | null;
+    };
+  };
+  fields: {
+    name: string;
+    email: string;
+    confirmEmail: string;
+    expertise: string;
+    url: string;
+    description: string;
+    availability: string;
+  };
+};
 
 export const action: ActionFunction = async ({ request }) => {
-  const formPayload = Object.fromEntries(await request.formData());
+  const form = await request.formData();
+  const name = form.get('name');
+  const email = form.get('email');
+  const confirmEmail = form.get('confirmEmail');
+  const expertise = form.get('expertise');
+  const url = form.get('url');
+  const availability = form.get('availability');
+  const description = form.get('description');
+  const result = ValidatePost.safeParse({
+    name,
+    email,
+    confirmEmail,
+    expertise,
+    url,
+    availability,
+    description,
+  });
 
-  const validationSchema = z
-    .object({
-      name: z.string().min(3),
-      email: z.string().email(),
-      confirmEmail: z.string().email(),
-      expertise: z.enum([
-        'Product Designer',
-        'Frontend Developer',
-        'Backend Developer',
-        'Fullstack Developer',
-      ]),
-      url: z.string().url().optional(),
-      availability: z.enum(['Full-time', 'Part-time', 'Contract', 'Freelance']),
-      description: z.string().nullable(),
-    })
-    .refine((data) => data.email === data.confirmEmail, {
-      message: 'Email and confirmEmail should be same email',
-      path: ['confirmEmail'],
-    });
-
-  try {
-    const validatedSchema = validationSchema.parse(formPayload);
-    console.log('Form data is valid for submission:', validatedSchema); //API call can be made here
-  } catch (error) {
-    return {
-      formPayload,
-      error,
-    };
+  if (!result.success) {
+    return json(
+      {
+        error: result.error.flatten(),
+        fields: {
+          name,
+          email,
+          confirmEmail,
+          expertise,
+          url,
+          availability,
+          description,
+        },
+      },
+      {
+        status: 400,
+      }
+    );
   }
+  console.log('success API call:' + result?.data?.name);
   return {} as any;
 };
 
-  // handle logic with form data and return a value  
-
 export default function Index() {
-  const actionData = useActionData();
+  const formData = useActionData<ActionData>();
   return (
     <div>
       <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -62,14 +91,19 @@ export default function Index() {
                 <input
                   name="name"
                   type="text"
-                  defaultValue={actionData?.formPayload?.name}
-                  key={actionData?.formPayload?.name}
+                  defaultValue={formData?.fields?.name}
+                  key={formData?.fields?.name}
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder=""
                 />
-                <span className="text-sm text-red-500">
-                  {actionData?.error?.issues[0]?.message}
-                </span>
+
+                {formData?.error?.fieldErrors?.name && (
+                  <>
+                    <span className="text-sm text-red-500">
+                      Your name must be at least 3 characters long.
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 
@@ -84,13 +118,13 @@ export default function Index() {
                 <input
                   name="email"
                   type="text"
-                  defaultValue={actionData?.formPayload?.email}
-                  key={actionData?.formPayload?.email}
+                  defaultValue={formData?.fields?.email}
+                  key={formData?.fields?.email}
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder=""
                 />
                 <span className="text-sm text-red-500">
-                  {actionData?.error?.issues[1]?.message}
+                  {formData?.error?.fieldErrors?.email}
                 </span>
               </div>
             </div>
@@ -108,12 +142,12 @@ export default function Index() {
                   type="email"
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder=""
-                  defaultValue={actionData?.formPayload?.confirmEmail}
-                  key={actionData?.formPayload?.confirmEmail}
+                  defaultValue={formData?.fields?.confirmEmail}
+                  key={formData?.fields?.confirmEmail}
                 />
               </div>
               <span className="text-sm text-red-500">
-                {actionData?.error?.issues[2]?.message}
+                {formData?.error?.fieldErrors?.confirmEmail}
               </span>
             </div>
 
@@ -128,8 +162,8 @@ export default function Index() {
                 <select
                   name="expertise"
                   className="mt-1 block w-full py-2 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  defaultValue={actionData?.formPayload?.expertise}
-                  key={actionData?.formPayload?.expertise}
+                  defaultValue={formData?.fields?.expertise}
+                  key={formData?.fields?.expertise}
                 >
                   <option></option>
                   <option>Product Designer</option>
@@ -138,9 +172,14 @@ export default function Index() {
                   <option>Fullstack Developer</option>
                 </select>
               </div>
-              <span className="text-sm text-red-500">
-                {actionData?.error?.issues[3]?.message}
-              </span>
+
+              {formData?.error?.fieldErrors?.expertise && (
+                <>
+                  <span className="text-sm text-red-500">
+                    You must select a expertise
+                  </span>
+                </>
+              )}
             </div>
 
             <div className="rounded-md shadow-sm -space-y-px">
@@ -156,12 +195,12 @@ export default function Index() {
                   type="text"
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder=""
-                  defaultValue={actionData?.formPayload?.url}
-                  key={actionData?.formPayload?.url}
+                  defaultValue={formData?.fields?.url}
+                  key={formData?.fields?.url}
                 />
               </div>
               <span className="text-sm text-red-500">
-                {actionData?.error?.issues[4]?.message}
+                {formData?.error?.fieldErrors?.url}
               </span>
             </div>
 
@@ -176,8 +215,8 @@ export default function Index() {
                 <select
                   name="availability"
                   className="mt-1 block w-full py-2 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  defaultValue={actionData?.formPayload?.availability}
-                  key={actionData?.formPayload?.availability}
+                  defaultValue={formData?.fields?.availability}
+                  key={formData?.fields?.availability}
                 >
                   <option></option>
                   <option>Full-time</option>
@@ -186,9 +225,14 @@ export default function Index() {
                   <option>Freelance</option>
                 </select>
               </div>
-              <span className="text-sm text-red-500">
-                {actionData?.error?.issues[5]?.message}
-              </span>
+
+              {formData?.error?.fieldErrors?.availability && (
+                <>
+                  <span className="text-sm text-red-500">
+                    You must select an availability
+                  </span>
+                </>
+              )}
             </div>
 
             <div className="rounded-md shadow-sm -space-y-px">
@@ -203,12 +247,12 @@ export default function Index() {
                   name="description"
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder=""
-                  defaultValue={actionData?.formPayload?.description}
-                  key={actionData?.formPayload?.description}
+                  defaultValue={formData?.fields?.description}
+                  key={formData?.fields?.description}
                 />
               </div>
               <span className="text-sm text-red-500">
-                {actionData?.error?.issues[6]?.message}
+                {formData?.error?.fieldErrors?.description}
               </span>
             </div>
 
